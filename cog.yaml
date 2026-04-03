@@ -1,0 +1,18 @@
+build:
+  gpu: true
+  python_version: "3.10"
+
+  system_packages:
+    - "git"
+    - "ffmpeg"
+
+  run:
+    - git clone https://github.com/comfyanonymous/ComfyUI /src/ComfyUI
+    - git clone https://github.com/scraed/LanPaint.git /src/ComfyUI/custom_nodes/LanPaint
+    - pip install --upgrade pip
+    - pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    - pip install -r /src/ComfyUI/requirements.txt
+    - pip install -e /src/ComfyUI/custom_nodes/LanPaint
+    - pip install requests pillow numpy
+
+predict: "predict.py:Predictor"

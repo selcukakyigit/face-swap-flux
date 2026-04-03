@@ -1,0 +1,21 @@
+name: Push model to Replicate
+
+on:
+  workflow_dispatch:
+
+jobs:
+  push-model:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install Cog
+        uses: replicate/setup-cog@v2
+
+      - name: Login to Replicate
+        run: echo "${{ secrets.REPLICATE_API_TOKEN }}" | cog login --token-stdin
+
+      - name: Push model
+        run: cog push r8.im/selcukakyigit/face-swap-flux

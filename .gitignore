@@ -1,0 +1,9 @@
+ComfyUI/
+__pycache__/
+*.pyc
+output/
+input/
+comfy_output/
+comfy_input/
+result_from_comfy.png
+.env
