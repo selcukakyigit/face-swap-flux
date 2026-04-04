@@ -22,9 +22,11 @@ build:
     - "aiohttp"
     - "tqdm"
     - "python-multipart"
+    - "pydantic==1.10.15"
 
   run:
     - git clone --depth=1 https://github.com/comfyanonymous/ComfyUI /src/ComfyUI
-    - pip install -r /src/ComfyUI/requirements.txt
+    - pip install --no-cache-dir -r /src/ComfyUI/requirements.txt
+    - pip install --no-cache-dir "pydantic==1.10.15"
 
 predict: "predict.py:Predictor"
