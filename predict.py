@@ -12,7 +12,6 @@ from cog import BasePredictor, Input, Path
 
 
 PROJECT_DIR = SysPath(__file__).parent
-COMFY_DIR = SysPath("/src/ComfyUI")
 WORKFLOW_PATH = PROJECT_DIR / "workflow_api.json"
 INPUT_DIR = PROJECT_DIR / "input"
 OUTPUT_DIR = PROJECT_DIR / "output"
