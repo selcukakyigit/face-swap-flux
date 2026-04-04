@@ -1,6 +1,8 @@
 import json
 import shutil
+import os
 import subprocess
+import sys
 import time
 import uuid
 from pathlib import Path as SysPath
@@ -16,12 +18,31 @@ INPUT_DIR = PROJECT_DIR / "input"
 OUTPUT_DIR = PROJECT_DIR / "output"
 
 
+
+COMFY_DIR = "/src/ComfyUI"
+
+def ensure_comfy():
+    if os.path.isdir(COMFY_DIR):
+        return
+
+    subprocess.check_call([
+        "git", "clone", "--depth=1",
+        "https://github.com/comfyanonymous/ComfyUI",
+        COMFY_DIR
+    ])
+
+    subprocess.check_call([
+        sys.executable, "-m", "pip", "install", "--no-cache-dir",
+        "-r", f"{COMFY_DIR}/requirements.txt"
+    ])
+
 class Predictor(BasePredictor):
     def setup(self):
         INPUT_DIR.mkdir(exist_ok=True)
         OUTPUT_DIR.mkdir(exist_ok=True)
 
     def _start_comfy(self):
+        ensure_comfy()
         proc = subprocess.Popen(
             ["python", "main.py", "--listen", "0.0.0.0", "--port", "8188"],
             cwd=str(COMFY_DIR),
