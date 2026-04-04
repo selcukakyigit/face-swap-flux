@@ -6,8 +6,6 @@ on:
 jobs:
   push-model:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
 
     steps:
       - name: Checkout repo
@@ -27,5 +25,10 @@ jobs:
       - name: Login to Replicate
         run: echo "${{ secrets.REPLICATE_API_TOKEN }}" | cog login --token-stdin
 
-      - name: Push model
-        run: cog push r8.im/selcukakyigit/face-swap-flux
+      - name: Push model (retry)
+        run: |
+          for i in 1 2 3; do
+            cog push r8.im/selcukakyigit/face-swap-flux && break
+            echo "Retry $i failed, retrying..."
+            sleep 10
+          done
