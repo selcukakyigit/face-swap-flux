@@ -11,8 +11,6 @@ build:
     - "libglib2.0-0"
 
   python_packages:
-    - "torch"
-    - "torchvision"
     - "numpy"
     - "pillow"
     - "opencv-python-headless"
@@ -23,10 +21,13 @@ build:
     - "tqdm"
     - "python-multipart"
     - "pydantic==1.10.15"
+    - "fastapi==0.98.0"
 
   run:
+    - pip uninstall -y torch torchvision torchaudio || true
+    - pip install --no-cache-dir torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu121
     - git clone --depth=1 https://github.com/comfyanonymous/ComfyUI /src/ComfyUI
     - pip install --no-cache-dir -r /src/ComfyUI/requirements.txt
-    - pip install --no-cache-dir "pydantic==1.10.15"
+    - pip install --no-cache-dir "pydantic==1.10.15" "fastapi==0.98.0"
 
 predict: "predict.py:Predictor"
