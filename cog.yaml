@@ -23,4 +23,8 @@ build:
     - "tqdm"
     - "python-multipart"
 
+  run:
+    - git clone --depth=1 https://github.com/comfyanonymous/ComfyUI /src/ComfyUI
+    - pip install -r /src/ComfyUI/requirements.txt
+
 predict: "predict.py:Predictor"
