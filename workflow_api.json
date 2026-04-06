@@ -9,20 +9,17 @@
     },
     "class_type": "SaveImage",
     "_meta": {
-      "title": "Görüntüyü Kaydet"
+      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc Kaydet"
     }
   },
   "100": {
     "inputs": {
       "guidance": 4,
-      "conditioning": [
-        "118",
-        0
-      ]
+      "conditioning": null
     },
     "class_type": "FluxGuidance",
     "_meta": {
-      "title": "FluxRehberliği"
+      "title": "FluxRehberli\u011fi"
     }
   },
   "102": {
@@ -31,7 +28,7 @@
     },
     "class_type": "VAELoader",
     "_meta": {
-      "title": "VAE Yükle"
+      "title": "VAE Y\u00fckle"
     }
   },
   "104": {
@@ -47,7 +44,7 @@
     },
     "class_type": "VAEDecode",
     "_meta": {
-      "title": "VAE Kod Çözme"
+      "title": "VAE Kod \u00c7\u00f6zme"
     }
   },
   "107": {
@@ -61,22 +58,6 @@
     "class_type": "CLIPTextEncode",
     "_meta": {
       "title": "CLIP Text Encode (Positive Prompt)"
-    }
-  },
-  "112": {
-    "inputs": {
-      "conditioning": [
-        "107",
-        0
-      ],
-      "latent": [
-        "150",
-        0
-      ]
-    },
-    "class_type": "ReferenceLatent",
-    "_meta": {
-      "title": "Referans Gizli Değişken"
     }
   },
   "115": {
@@ -94,23 +75,7 @@
     },
     "class_type": "ImageScaleToTotalPixels",
     "_meta": {
-      "title": "Görüntüyü Toplam Piksele Göre Ölçekle"
-    }
-  },
-  "118": {
-    "inputs": {
-      "conditioning": [
-        "112",
-        0
-      ],
-      "latent": [
-        "119",
-        0
-      ]
-    },
-    "class_type": "ReferenceLatent",
-    "_meta": {
-      "title": "Referans Gizli Değişken"
+      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc Toplam Piksele G\u00f6re \u00d6l\u00e7ekle"
     }
   },
   "119": {
@@ -144,7 +109,7 @@
     },
     "class_type": "ImageScaleToTotalPixels",
     "_meta": {
-      "title": "Görüntüyü Toplam Piksele Göre Ölçekle"
+      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc Toplam Piksele G\u00f6re \u00d6l\u00e7ekle"
     }
   },
   "121": {
@@ -153,7 +118,7 @@
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "Görüntü Yükle"
+      "title": "G\u00f6r\u00fcnt\u00fc Y\u00fckle"
     }
   },
   "125": {
@@ -179,7 +144,7 @@
     },
     "class_type": "UNETLoader",
     "_meta": {
-      "title": "Difüzyon Modeli Yükle"
+      "title": "Dif\u00fczyon Modeli Y\u00fckle"
     }
   },
   "135": {
@@ -200,7 +165,7 @@
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
-      "title": "KoşullandırmaSıfırla"
+      "title": "Ko\u015fulland\u0131rmaS\u0131f\u0131rla"
     }
   },
   "146": {
@@ -211,7 +176,7 @@
     },
     "class_type": "CLIPLoader",
     "_meta": {
-      "title": "CLIP Yükle"
+      "title": "CLIP Y\u00fckle"
     }
   },
   "147": {
@@ -227,7 +192,7 @@
     },
     "class_type": "VAEDecode",
     "_meta": {
-      "title": "VAE Kod Çözme"
+      "title": "VAE Kod \u00c7\u00f6zme"
     }
   },
   "148": {
@@ -261,7 +226,7 @@
     },
     "class_type": "ImageScale",
     "_meta": {
-      "title": "Görüntüyü Büyüt"
+      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc B\u00fcy\u00fct"
     }
   },
   "150": {
@@ -286,7 +251,7 @@
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "Görüntü Yükle"
+      "title": "G\u00f6r\u00fcnt\u00fc Y\u00fckle"
     }
   },
   "152": {
@@ -302,7 +267,7 @@
     },
     "class_type": "SetLatentNoiseMask",
     "_meta": {
-      "title": "Gizli Gürültü Maskesi Ayarla"
+      "title": "Gizli G\u00fcr\u00fclt\u00fc Maskesi Ayarla"
     }
   },
   "153": {
@@ -325,7 +290,7 @@
     },
     "class_type": "ResizeImageMaskNode",
     "_meta": {
-      "title": "Görsel/Maske Yeniden Boyutlandır"
+      "title": "G\u00f6rsel/Maske Yeniden Boyutland\u0131r"
     }
   },
   "156": {
@@ -338,8 +303,8 @@
       "denoise": 1,
       "LanPaint_NumSteps": 2,
       "LanPaint_PromptMode": "Image First",
-      "LanPaint_Info": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!",
-      "Inpainting_mode": "🖼️ Image Inpainting",
+      "LanPaint_Info": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star \u2b50\ufe0f!",
+      "Inpainting_mode": "\ud83d\uddbc\ufe0f Image Inpainting",
       "model": [
         "161",
         0
@@ -371,7 +336,7 @@
     },
     "class_type": "MaskPreview",
     "_meta": {
-      "title": "MaskeÖnizleme"
+      "title": "Maske\u00d6nizleme"
     }
   },
   "161": {
@@ -385,7 +350,7 @@
     },
     "class_type": "LoraLoaderModelOnly",
     "_meta": {
-      "title": "SadeceModelLoRA Yükleyici"
+      "title": "SadeceModelLoRA Y\u00fckleyici"
     }
   },
   "162": {
@@ -419,7 +384,7 @@
     },
     "class_type": "EmptyFlux2LatentImage",
     "_meta": {
-      "title": "Boş Flux 2 Latent"
+      "title": "Bo\u015f Flux 2 Latent"
     }
   }
 }
