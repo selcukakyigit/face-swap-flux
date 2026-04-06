@@ -72,8 +72,8 @@ class Predictor(BasePredictor):
 
             if proc.poll() is not None:
                 raise RuntimeError(
-                    "ComfyUI erken kapandı.\n"
-                    + "\n".join(startup_lines[-80:])
+                    "ComfyUI erken kapandı.\nFULL LOG:\n"
+                    + "\n".join(startup_lines[-300:])
                 )
 
         if not started:
