@@ -25,9 +25,12 @@ build:
 
   run:
     - pip uninstall -y torch torchvision torchaudio || true
-    - pip install --no-cache-dir torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu121
-    - git clone --depth=1 https://github.com/comfyanonymous/ComfyUI /src/ComfyUI
+    - pip install --no-cache-dir torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
+    - rm -rf /src/ComfyUI
+    - git clone https://github.com/comfyanonymous/ComfyUI /src/ComfyUI
+    - cd /src/ComfyUI && git checkout 8d5d863
     - pip install --no-cache-dir -r /src/ComfyUI/requirements.txt
+    - pip uninstall -y comfy-kitchen comfy-aimdo || true
     - pip install --no-cache-dir "pydantic==1.10.15" "fastapi==0.98.0"
 
 predict: "predict.py:Predictor"
