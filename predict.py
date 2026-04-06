@@ -43,7 +43,7 @@ class Predictor(BasePredictor):
     def _start_comfy(self):
         ensure_comfy()
         proc = subprocess.Popen(
-            ["python", "main.py", "--listen", "0.0.0.0", "--port", "8188"],
+            ["python", "-u", "main.py", "--listen", "0.0.0.0", "--port", "8188"],
             cwd=str(COMFY_DIR),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
@@ -71,9 +71,20 @@ class Predictor(BasePredictor):
                 time.sleep(1)
 
             if proc.poll() is not None:
+                remaining = ""
+                try:
+                    if proc.stdout is not None:
+                        remaining = proc.stdout.read() or ""
+                except Exception:
+                    pass
+
+                full_log = startup_lines[-300:]
+                if remaining:
+                    full_log.append(remaining)
+
                 raise RuntimeError(
-                    "ComfyUI erken kapandı.\nFULL LOG:\n"
-                    + "\n".join(startup_lines[-300:])
+                    f"ComfyUI erken kapandı. Exit code: {proc.returncode}\nFULL LOG:\n"
+                    + "\n".join(full_log)
                 )
 
         if not started:
