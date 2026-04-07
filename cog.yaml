@@ -38,9 +38,9 @@ build:
     - mkdir -p /src/ComfyUI/models/clip
     - mkdir -p /src/ComfyUI/models/loras
 
-    - cp -r /src/assets/custom_nodes/LanPaint /src/ComfyUI/custom_nodes/LanPaint
-    - cp -r /src/assets/custom_nodes/rgthree-comfy /src/ComfyUI/custom_nodes/rgthree-comfy
-    - cp -r /src/assets/custom_nodes/ComfyUI_essentials /src/ComfyUI/custom_nodes/ComfyUI_essentials
+    - git clone --depth=1 https://github.com/scraed/LanPaint.git /src/ComfyUI/custom_nodes/LanPaint
+    - git clone --depth=1 https://github.com/rgthree/rgthree-comfy.git /src/ComfyUI/custom_nodes/rgthree-comfy
+    - git clone --depth=1 https://github.com/cubiq/ComfyUI_essentials.git /src/ComfyUI/custom_nodes/ComfyUI_essentials
 
     - wget -q --show-progress -O /src/ComfyUI/models/unet/flux-2-klein-9b.safetensors "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B/resolve/main/flux-2-klein-9b.safetensors"
     - wget -q --show-progress -O /src/ComfyUI/models/vae/flux2-vae.safetensors "https://huggingface.co/Comfy-Org/vae-text-encorder-for-flux-klein-9b/resolve/main/split_files/vae/flux2-vae.safetensors"
@@ -50,6 +50,7 @@ build:
     - pip install --no-cache-dir -e /src/ComfyUI/custom_nodes/LanPaint || true
     - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/rgthree-comfy/requirements.txt || true
     - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/ComfyUI_essentials/requirements.txt || true
+    - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/LanPaint/requirements.txt || true
 
     - pip install --no-cache-dir "pydantic==1.10.15" "fastapi==0.98.0"
 
