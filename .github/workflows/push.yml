@@ -28,7 +28,7 @@ jobs:
       - name: Push model (retry)
         run: |
           for i in 1 2 3; do
-            cog push r8.im/selcukakyigit/face-swap-flux && break
+            cog push --no-cache r8.im/selcukakyigit/face-swap-flux && break
             echo "Retry $i failed, retrying..."
             sleep 10
           done

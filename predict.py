@@ -136,10 +136,15 @@ class Predictor(BasePredictor):
         shutil.copy(base_image, base_dst)
         shutil.copy(face_image, face_dst)
 
-        with open(WORKFLOW_PATH, "r", encoding="utf-8") as f:
-            workflow = json.load(f)
-
+        import hashlib
+        raw = WORKFLOW_PATH.read_bytes()
+        wf_hash = hashlib.md5(raw).hexdigest()
+        workflow = json.loads(raw)
+        print("[INFO] workflow file:", WORKFLOW_PATH)
+        print("[INFO] workflow md5:", wf_hash)
         print("[INFO] workflow nodes:", list(workflow.keys()))
+        if "112" in workflow:
+            print("[WARN] node 112 VAR:", workflow["112"].get("class_type"))
 
         # LoadImage node'ları dosya adı bekliyor
         workflow["151"]["inputs"]["image"] = base_dst.name
