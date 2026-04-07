@@ -27,9 +27,13 @@ jobs:
         run: echo "${{ secrets.REPLICATE_API_TOKEN }}" | cog login --token-stdin
 
       - name: Push model (retry)
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
+          echo -n "$HF_TOKEN" > .hf_token
           for i in 1 2 3; do
             cog push r8.im/selcukakyigit/face-swap-flux && break
             echo "Retry $i failed, retrying..."
             sleep 10
           done
+          rm -f .hf_token
