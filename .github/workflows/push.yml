@@ -30,10 +30,9 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HUGGING_FACE_NEW }}
         run: |
-          echo -n "$HF_TOKEN" > .hf_token
+          sed -i "s/HF_TOKEN_PLACEHOLDER/${HF_TOKEN}/g" cog.yaml
           for i in 1 2 3; do
             cog push r8.im/selcukakyigit/face-swap-flux && break
             echo "Retry $i failed, retrying..."
             sleep 10
           done
-          rm -f .hf_token
