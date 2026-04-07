@@ -28,7 +28,7 @@ jobs:
 
       - name: Push model (retry)
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_TOKEN: ${{ secrets.HUGGING_FACE_NEW }}
         run: |
           echo -n "$HF_TOKEN" > .hf_token
           for i in 1 2 3; do
