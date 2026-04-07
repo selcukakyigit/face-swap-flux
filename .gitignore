@@ -7,3 +7,5 @@ comfy_output/
 comfy_input/
 result_from_comfy.png
 .env
+assets/models/
+.venv/

@@ -9,17 +9,20 @@
     },
     "class_type": "SaveImage",
     "_meta": {
-      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc Kaydet"
+      "title": "Görüntüyü Kaydet"
     }
   },
   "100": {
     "inputs": {
       "guidance": 4,
-      "conditioning": null
+      "conditioning": [
+        "107",
+        0
+      ]
     },
     "class_type": "FluxGuidance",
     "_meta": {
-      "title": "FluxRehberli\u011fi"
+      "title": "FluxRehberliği"
     }
   },
   "102": {
@@ -28,7 +31,7 @@
     },
     "class_type": "VAELoader",
     "_meta": {
-      "title": "VAE Y\u00fckle"
+      "title": "VAE Yükle"
     }
   },
   "104": {
@@ -44,7 +47,7 @@
     },
     "class_type": "VAEDecode",
     "_meta": {
-      "title": "VAE Kod \u00c7\u00f6zme"
+      "title": "VAE Kod Çözme"
     }
   },
   "107": {
@@ -75,7 +78,7 @@
     },
     "class_type": "ImageScaleToTotalPixels",
     "_meta": {
-      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc Toplam Piksele G\u00f6re \u00d6l\u00e7ekle"
+      "title": "Görüntüyü Toplam Piksele Göre Ölçekle"
     }
   },
   "119": {
@@ -109,7 +112,7 @@
     },
     "class_type": "ImageScaleToTotalPixels",
     "_meta": {
-      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc Toplam Piksele G\u00f6re \u00d6l\u00e7ekle"
+      "title": "Görüntüyü Toplam Piksele Göre Ölçekle"
     }
   },
   "121": {
@@ -118,7 +121,7 @@
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "G\u00f6r\u00fcnt\u00fc Y\u00fckle"
+      "title": "Görüntü Yükle"
     }
   },
   "125": {
@@ -144,7 +147,7 @@
     },
     "class_type": "UNETLoader",
     "_meta": {
-      "title": "Dif\u00fczyon Modeli Y\u00fckle"
+      "title": "Difüzyon Modeli Yükle"
     }
   },
   "135": {
@@ -165,7 +168,7 @@
     },
     "class_type": "ConditioningZeroOut",
     "_meta": {
-      "title": "Ko\u015fulland\u0131rmaS\u0131f\u0131rla"
+      "title": "KoşullandırmaSıfırla"
     }
   },
   "146": {
@@ -176,7 +179,7 @@
     },
     "class_type": "CLIPLoader",
     "_meta": {
-      "title": "CLIP Y\u00fckle"
+      "title": "CLIP Yükle"
     }
   },
   "147": {
@@ -192,7 +195,7 @@
     },
     "class_type": "VAEDecode",
     "_meta": {
-      "title": "VAE Kod \u00c7\u00f6zme"
+      "title": "VAE Kod Çözme"
     }
   },
   "148": {
@@ -202,7 +205,7 @@
         0
       ]
     },
-    "class_type": "GetImageSize",
+    "class_type": "GetImageSize+",
     "_meta": {
       "title": "Resim Boyutunu Al"
     }
@@ -226,7 +229,7 @@
     },
     "class_type": "ImageScale",
     "_meta": {
-      "title": "G\u00f6r\u00fcnt\u00fcy\u00fc B\u00fcy\u00fct"
+      "title": "Görüntüyü Büyüt"
     }
   },
   "150": {
@@ -251,7 +254,7 @@
     },
     "class_type": "LoadImage",
     "_meta": {
-      "title": "G\u00f6r\u00fcnt\u00fc Y\u00fckle"
+      "title": "Görüntü Yükle"
     }
   },
   "152": {
@@ -267,7 +270,7 @@
     },
     "class_type": "SetLatentNoiseMask",
     "_meta": {
-      "title": "Gizli G\u00fcr\u00fclt\u00fc Maskesi Ayarla"
+      "title": "Gizli Gürültü Maskesi Ayarla"
     }
   },
   "153": {
@@ -290,7 +293,7 @@
     },
     "class_type": "ResizeImageMaskNode",
     "_meta": {
-      "title": "G\u00f6rsel/Maske Yeniden Boyutland\u0131r"
+      "title": "Görsel/Maske Yeniden Boyutlandır"
     }
   },
   "156": {
@@ -303,8 +306,8 @@
       "denoise": 1,
       "LanPaint_NumSteps": 2,
       "LanPaint_PromptMode": "Image First",
-      "LanPaint_Info": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star \u2b50\ufe0f!",
-      "Inpainting_mode": "\ud83d\uddbc\ufe0f Image Inpainting",
+      "LanPaint_Info": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!",
+      "Inpainting_mode": "🖼️ Image Inpainting",
       "model": [
         "161",
         0
@@ -334,9 +337,9 @@
         0
       ]
     },
-    "class_type": "MaskPreview",
+    "class_type": "MaskPreview+",
     "_meta": {
-      "title": "Maske\u00d6nizleme"
+      "title": "MaskeÖnizleme"
     }
   },
   "161": {
@@ -350,7 +353,7 @@
     },
     "class_type": "LoraLoaderModelOnly",
     "_meta": {
-      "title": "SadeceModelLoRA Y\u00fckleyici"
+      "title": "SadeceModelLoRA Yükleyici"
     }
   },
   "162": {
@@ -384,7 +387,7 @@
     },
     "class_type": "EmptyFlux2LatentImage",
     "_meta": {
-      "title": "Bo\u015f Flux 2 Latent"
+      "title": "Boş Flux 2 Latent"
     }
   }
 }

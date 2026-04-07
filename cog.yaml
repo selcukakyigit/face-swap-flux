@@ -5,6 +5,7 @@ build:
 
   system_packages:
     - "git"
+    - "wget"
     - "ffmpeg"
     - "ca-certificates"
     - "libgl1"
@@ -27,19 +28,28 @@ build:
     - pip uninstall -y torch torchvision torchaudio || true
     - pip install --no-cache-dir torch==2.3.1 torchvision==0.18.1 --index-url https://download.pytorch.org/whl/cu121
 
-    # ComfyUI
     - rm -rf /src/ComfyUI
     - git clone https://github.com/comfyanonymous/ComfyUI /src/ComfyUI
     - pip install --no-cache-dir -r /src/ComfyUI/requirements.txt
 
-    # 🔥 CRITICAL: custom nodes
-    - git clone https://github.com/ltdrdata/ComfyUI-Manager /src/ComfyUI/custom_nodes/ComfyUI-Manager
-    - git clone https://github.com/cubiq/ComfyUI_IPAdapter_plus /src/ComfyUI/custom_nodes/IPAdapter
-    - git clone https://github.com/Fannovel16/comfyui_controlnet_aux /src/ComfyUI/custom_nodes/controlnet_aux
-    - git clone https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet /src/ComfyUI/custom_nodes/advanced_controlnet
+    - mkdir -p /src/ComfyUI/custom_nodes
+    - mkdir -p /src/ComfyUI/models/unet
+    - mkdir -p /src/ComfyUI/models/vae
+    - mkdir -p /src/ComfyUI/models/clip
+    - mkdir -p /src/ComfyUI/models/loras
 
-    # ⚠️ Senin workflow için kritik olan (deneme)
-    - git clone https://github.com/BadCafeCode/ComfyUI_LayerStyle /src/ComfyUI/custom_nodes/LayerStyle
+    - cp -r /src/assets/custom_nodes/LanPaint /src/ComfyUI/custom_nodes/LanPaint
+    - cp -r /src/assets/custom_nodes/rgthree-comfy /src/ComfyUI/custom_nodes/rgthree-comfy
+    - cp -r /src/assets/custom_nodes/ComfyUI_essentials /src/ComfyUI/custom_nodes/ComfyUI_essentials
+
+    - wget -q --show-progress -O /src/ComfyUI/models/unet/flux-2-klein-9b.safetensors "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B/resolve/main/flux-2-klein-9b.safetensors"
+    - wget -q --show-progress -O /src/ComfyUI/models/vae/flux2-vae.safetensors "https://huggingface.co/Comfy-Org/vae-text-encorder-for-flux-klein-9b/resolve/main/split_files/vae/flux2-vae.safetensors"
+    - wget -q --show-progress -O /src/ComfyUI/models/clip/qwen_3_8b_fp8mixed.safetensors "https://huggingface.co/Comfy-Org/vae-text-encorder-for-flux-klein-9b/resolve/main/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors"
+    - wget -q --show-progress -O /src/ComfyUI/models/loras/bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors "https://huggingface.co/Alissonerdx/BFS-Best-Face-Swap/resolve/main/bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors"
+
+    - pip install --no-cache-dir -e /src/ComfyUI/custom_nodes/LanPaint || true
+    - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/rgthree-comfy/requirements.txt || true
+    - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/ComfyUI_essentials/requirements.txt || true
 
     - pip install --no-cache-dir "pydantic==1.10.15" "fastapi==0.98.0"
 

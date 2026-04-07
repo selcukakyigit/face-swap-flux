@@ -43,7 +43,8 @@ class Predictor(BasePredictor):
     def _start_comfy(self):
         ensure_comfy()
         proc = subprocess.Popen(
-            ["python", "-u", "main.py", "--listen", "0.0.0.0", "--port", "8188"],
+            ["python", "-u", "main.py", "--listen", "0.0.0.0", "--port", "8188",
+             "--input-directory", str(INPUT_DIR)],
             cwd=str(COMFY_DIR),
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
