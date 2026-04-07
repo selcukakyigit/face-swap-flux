@@ -139,6 +139,8 @@ class Predictor(BasePredictor):
         with open(WORKFLOW_PATH, "r", encoding="utf-8") as f:
             workflow = json.load(f)
 
+        print("[INFO] workflow nodes:", list(workflow.keys()))
+
         # LoadImage node'ları dosya adı bekliyor
         workflow["151"]["inputs"]["image"] = base_dst.name
         workflow["121"]["inputs"]["image"] = face_dst.name
