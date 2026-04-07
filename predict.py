@@ -39,6 +39,11 @@ class Predictor(BasePredictor):
     def setup(self):
         INPUT_DIR.mkdir(exist_ok=True)
         OUTPUT_DIR.mkdir(exist_ok=True)
+        import json as _json
+        wf = _json.loads(WORKFLOW_PATH.read_bytes())
+        print("[SETUP] workflow nodes:", list(wf.keys()))
+        if "112" in wf:
+            print("[SETUP] WARN node 112 exists:", wf["112"].get("class_type"))
 
     def _start_comfy(self):
         ensure_comfy()

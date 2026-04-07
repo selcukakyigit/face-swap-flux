@@ -17,6 +17,7 @@ jobs:
           sudo rm -rf /opt/ghc || true
           sudo rm -rf /opt/hostedtoolcache/CodeQL || true
           docker system prune -af || true
+          docker buildx prune -af || true
           df -h
 
       - name: Install Cog
@@ -28,7 +29,7 @@ jobs:
       - name: Push model (retry)
         run: |
           for i in 1 2 3; do
-            cog push --no-cache r8.im/selcukakyigit/face-swap-flux && break
+            cog push r8.im/selcukakyigit/face-swap-flux && break
             echo "Retry $i failed, retrying..."
             sleep 10
           done
