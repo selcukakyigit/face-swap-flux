@@ -42,10 +42,7 @@ build:
     - git clone --depth=1 https://github.com/rgthree/rgthree-comfy.git /src/ComfyUI/custom_nodes/rgthree-comfy
     - git clone --depth=1 https://github.com/cubiq/ComfyUI_essentials.git /src/ComfyUI/custom_nodes/ComfyUI_essentials
 
-    - HF_TOKEN=$(cat /src/.hf_token 2>/dev/null || echo "") && wget -q --show-progress --header="Authorization: Bearer $HF_TOKEN" -O /src/ComfyUI/models/unet/flux-2-klein-9b.safetensors "https://huggingface.co/black-forest-labs/FLUX.2-klein-9B/resolve/main/flux-2-klein-9b.safetensors"
-    - HF_TOKEN=$(cat /src/.hf_token 2>/dev/null || echo "") && wget -q --show-progress --header="Authorization: Bearer $HF_TOKEN" -O /src/ComfyUI/models/vae/flux2-vae.safetensors "https://huggingface.co/Comfy-Org/vae-text-encorder-for-flux-klein-9b/resolve/main/split_files/vae/flux2-vae.safetensors"
-    - HF_TOKEN=$(cat /src/.hf_token 2>/dev/null || echo "") && wget -q --show-progress --header="Authorization: Bearer $HF_TOKEN" -O /src/ComfyUI/models/clip/qwen_3_8b_fp8mixed.safetensors "https://huggingface.co/Comfy-Org/vae-text-encorder-for-flux-klein-9b/resolve/main/split_files/text_encoders/qwen_3_8b_fp8mixed.safetensors"
-    - wget -q --show-progress -O /src/ComfyUI/models/loras/bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors "https://huggingface.co/Alissonerdx/BFS-Best-Face-Swap/resolve/main/bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors"
+    - bash /src/download_models.sh
 
     - pip install --no-cache-dir -e /src/ComfyUI/custom_nodes/LanPaint || true
     - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/rgthree-comfy/requirements.txt || true
