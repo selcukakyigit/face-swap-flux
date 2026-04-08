@@ -21,8 +21,8 @@ build:
     - "aiohttp"
     - "tqdm"
     - "python-multipart"
-    - "pydantic==1.10.15"
-    - "fastapi==0.98.0"
+    - "pydantic>=2.0,<3.0"
+    - "fastapi>=0.100.0"
 
   run:
     - pip uninstall -y torch torchvision torchaudio || true
@@ -52,6 +52,6 @@ build:
     - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/ComfyUI_essentials/requirements.txt || true
     - pip install --no-cache-dir -r /src/ComfyUI/custom_nodes/LanPaint/requirements.txt || true
 
-    - pip install --no-cache-dir "pydantic==1.10.15" "fastapi==0.98.0"
+    - pip install --no-cache-dir "pydantic>=2.0,<3.0" "fastapi>=0.100.0"
 
 predict: "predict.py:Predictor"
