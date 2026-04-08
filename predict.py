@@ -16,37 +16,22 @@ WORKFLOW_PATH = PROJECT_DIR / "workflow_api.json"
 INPUT_DIR = PROJECT_DIR / "input"
 OUTPUT_DIR = PROJECT_DIR / "output"
 
-
-
 COMFY_DIR = "/src/ComfyUI"
 
-def ensure_comfy():
-    if os.path.isdir(COMFY_DIR):
-        return
-
-    subprocess.check_call([
-        "git", "clone", "--depth=1",
-        "https://github.com/comfyanonymous/ComfyUI",
-        COMFY_DIR
-    ])
-
-    subprocess.check_call([
-        sys.executable, "-m", "pip", "install", "--no-cache-dir",
-        "-r", f"{COMFY_DIR}/requirements.txt"
-    ])
 
 class Predictor(BasePredictor):
     def setup(self):
         INPUT_DIR.mkdir(exist_ok=True)
         OUTPUT_DIR.mkdir(exist_ok=True)
+
         import json as _json
         wf = _json.loads(WORKFLOW_PATH.read_bytes())
         print("[SETUP] workflow nodes:", list(wf.keys()))
-        if "112" in wf:
-            print("[SETUP] WARN node 112 exists:", wf["112"].get("class_type"))
+
+        self.comfy_proc = self._start_comfy()
+        print("[SETUP] ComfyUI hazır, modeller yüklü.")
 
     def _start_comfy(self):
-        ensure_comfy()
         proc = subprocess.Popen(
             ["python", "-u", "main.py", "--listen", "0.0.0.0", "--port", "8188",
              "--input-directory", str(INPUT_DIR)],
@@ -57,24 +42,14 @@ class Predictor(BasePredictor):
             bufsize=1,
         )
 
-        started = False
         startup_lines = []
 
-        for _ in range(180):
+        for _ in range(300):
             if proc.stdout is not None:
                 line = proc.stdout.readline()
                 if line:
                     startup_lines.append(line.rstrip())
                     print("[COMFY]", line.rstrip())
-
-            try:
-                r = requests.get("http://127.0.0.1:8188/system_stats", timeout=2)
-                if r.status_code == 200:
-                    started = True
-                    print("[COMFY] system_stats OK")
-                    break
-            except Exception:
-                time.sleep(1)
 
             if proc.poll() is not None:
                 remaining = ""
@@ -83,43 +58,44 @@ class Predictor(BasePredictor):
                         remaining = proc.stdout.read() or ""
                 except Exception:
                     pass
-
                 full_log = startup_lines[-300:]
                 if remaining:
                     full_log.append(remaining)
-
                 raise RuntimeError(
                     f"ComfyUI erken kapandı. Exit code: {proc.returncode}\nFULL LOG:\n"
                     + "\n".join(full_log)
                 )
 
-        if not started:
+            try:
+                r = requests.get("http://127.0.0.1:8188/system_stats", timeout=2)
+                if r.status_code == 200:
+                    print("[COMFY] system_stats OK — başlatıldı")
+                    break
+            except Exception:
+                time.sleep(1)
+        else:
             proc.kill()
             raise RuntimeError(
-                "ComfyUI başlatılamadı.\n"
+                "ComfyUI başlatılamadı (timeout).\n"
                 + "\n".join(startup_lines[-80:])
             )
 
         return proc
 
-    def _read_more_logs(self, proc, max_lines=80):
+    def _drain_logs(self, max_lines=50):
         lines = []
-        if proc.stdout is None:
+        if self.comfy_proc.stdout is None:
             return lines
-
         for _ in range(max_lines):
             try:
-                line = proc.stdout.readline()
+                line = self.comfy_proc.stdout.readline()
             except Exception:
                 break
-
             if not line:
                 break
-
             line = line.rstrip()
             lines.append(line)
             print("[COMFY]", line)
-
         return lines
 
     def predict(
@@ -135,9 +111,14 @@ class Predictor(BasePredictor):
         guidance: float = Input(description="Guidance scale", default=1.0, ge=0.0, le=20.0),
         cfg: float = Input(description="CFG", default=1.0, ge=0.0, le=20.0),
     ) -> Path:
+
+        # ComfyUI process ölmüşse yeniden başlat
+        if self.comfy_proc.poll() is not None:
+            print("[WARN] ComfyUI kapanmış, yeniden başlatılıyor...")
+            self.comfy_proc = self._start_comfy()
+
         base_dst = INPUT_DIR / f"base_{uuid.uuid4().hex}.png"
         face_dst = INPUT_DIR / f"face_{uuid.uuid4().hex}.png"
-
         shutil.copy(base_image, base_dst)
         shutil.copy(face_image, face_dst)
 
@@ -148,14 +129,10 @@ class Predictor(BasePredictor):
         print("[INFO] workflow file:", WORKFLOW_PATH)
         print("[INFO] workflow md5:", wf_hash)
         print("[INFO] workflow nodes:", list(workflow.keys()))
-        if "112" in workflow:
-            print("[WARN] node 112 VAR:", workflow["112"].get("class_type"))
 
-        # LoadImage node'ları dosya adı bekliyor
         workflow["151"]["inputs"]["image"] = base_dst.name
         workflow["121"]["inputs"]["image"] = face_dst.name
 
-        # Dinamik inputlar
         workflow["107"]["inputs"]["text"] = prompt
         workflow["100"]["inputs"]["guidance"] = guidance
         workflow["156"]["inputs"]["steps"] = steps
@@ -173,106 +150,83 @@ class Predictor(BasePredictor):
         print("[INFO] guidance:", guidance)
         print("[INFO] cfg:", cfg)
 
-        proc = self._start_comfy()
+        r = requests.post(
+            "http://127.0.0.1:8188/prompt",
+            json={"prompt": workflow},
+            timeout=120,
+        )
+        print("[PROMPT STATUS]", r.status_code)
+        print("[PROMPT RESPONSE]", r.text[:500])
+        r.raise_for_status()
+        prompt_data = r.json()
 
-        try:
-            r = requests.post(
-                "http://127.0.0.1:8188/prompt",
-                json={"prompt": workflow},
-                timeout=120,
-            )
-
-            print("[PROMPT STATUS]", r.status_code)
-            print("[PROMPT RESPONSE]", r.text)
-
-            r.raise_for_status()
-            prompt_data = r.json()
-
-            if "prompt_id" not in prompt_data:
-                extra_logs = self._read_more_logs(proc, max_lines=120)
-                raise RuntimeError(
-                    "/prompt cevabı prompt_id döndürmedi.\n"
-                    f"Response: {prompt_data}\n"
-                    "ComfyUI logları:\n"
-                    + "\n".join(extra_logs)
-                )
-
-            prompt_id = prompt_data["prompt_id"]
-            print("[PROMPT ID]", prompt_id)
-
-            for _ in range(300):
-                if proc.poll() is not None:
-                    extra_logs = self._read_more_logs(proc, max_lines=120)
-                    raise RuntimeError(
-                        "ComfyUI işlem sırasında kapandı.\n"
-                        + "\n".join(extra_logs)
-                    )
-
-                h = requests.get(
-                    f"http://127.0.0.1:8188/history/{prompt_id}",
-                    timeout=120,
-                )
-
-                print("[HISTORY STATUS]", h.status_code)
-
-                if h.status_code != 200:
-                    print("[HISTORY RESPONSE]", h.text[:1500])
-
-                h.raise_for_status()
-                data = h.json()
-
-                if prompt_id in data:
-                    outputs = data[prompt_id].get("outputs", {})
-                    for _, node in outputs.items():
-                        if "images" in node and node["images"]:
-                            image = node["images"][0]
-
-                            params = {
-                                "filename": image["filename"],
-                                "subfolder": image.get("subfolder", ""),
-                                "type": image.get("type", "output"),
-                            }
-
-                            img = requests.get(
-                                "http://127.0.0.1:8188/view",
-                                params=params,
-                                timeout=120,
-                            )
-                            img.raise_for_status()
-
-                            out = SysPath("/tmp") / f"{uuid.uuid4().hex}.png"
-                            with open(out, "wb") as f:
-                                f.write(img.content)
-
-                            print("[SUCCESS] output:", str(out))
-                            return Path(str(out))
-
-                # Hata loglarını ara
-                logs = self._read_more_logs(proc, max_lines=20)
-                for line in logs:
-                    lower = line.lower()
-                    if (
-                        "error" in lower
-                        or "exception" in lower
-                        or "traceback" in lower
-                        or "killed" in lower
-                        or "out of memory" in lower
-                        or "oom" in lower
-                    ):
-                        raise RuntimeError(
-                            "ComfyUI hata verdi:\n" + "\n".join(logs)
-                        )
-
-                time.sleep(2)
-
-            extra_logs = self._read_more_logs(proc, max_lines=120)
+        if "prompt_id" not in prompt_data:
             raise RuntimeError(
-                "Zaman aşımı: çıktı alınamadı.\n"
-                + "\n".join(extra_logs)
+                f"/prompt cevabı prompt_id döndürmedi.\nResponse: {prompt_data}"
             )
 
-        finally:
-            try:
-                proc.kill()
-            except Exception:
-                pass
+        prompt_id = prompt_data["prompt_id"]
+        print("[PROMPT ID]", prompt_id)
+
+        for _ in range(600):
+            if self.comfy_proc.poll() is not None:
+                logs = self._drain_logs(max_lines=120)
+                raise RuntimeError(
+                    "ComfyUI işlem sırasında kapandı.\n" + "\n".join(logs)
+                )
+
+            self._drain_logs(max_lines=10)
+
+            h = requests.get(
+                f"http://127.0.0.1:8188/history/{prompt_id}",
+                timeout=30,
+            )
+            if h.status_code != 200:
+                time.sleep(2)
+                continue
+
+            data = h.json()
+            if prompt_id in data:
+                history_entry = data[prompt_id]
+
+                # Hata kontrolü
+                if "status" in history_entry:
+                    status = history_entry["status"]
+                    if status.get("status_str") == "error":
+                        msgs = [m.get("text", "") for m in status.get("messages", [])]
+                        raise RuntimeError("ComfyUI workflow hatası:\n" + "\n".join(msgs))
+
+                outputs = history_entry.get("outputs", {})
+                for _, node in outputs.items():
+                    if "images" in node and node["images"]:
+                        image = node["images"][0]
+                        params = {
+                            "filename": image["filename"],
+                            "subfolder": image.get("subfolder", ""),
+                            "type": image.get("type", "output"),
+                        }
+                        img = requests.get(
+                            "http://127.0.0.1:8188/view",
+                            params=params,
+                            timeout=120,
+                        )
+                        img.raise_for_status()
+
+                        out = SysPath("/tmp") / f"{uuid.uuid4().hex}.png"
+                        with open(out, "wb") as f:
+                            f.write(img.content)
+
+                        print("[SUCCESS] output:", str(out))
+
+                        # Geçici input dosyalarını temizle
+                        try:
+                            base_dst.unlink(missing_ok=True)
+                            face_dst.unlink(missing_ok=True)
+                        except Exception:
+                            pass
+
+                        return Path(str(out))
+
+            time.sleep(2)
+
+        raise RuntimeError("Zaman aşımı: 20 dakika içinde çıktı alınamadı.")
