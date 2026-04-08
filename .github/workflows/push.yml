@@ -36,10 +36,7 @@ jobs:
         run: echo "${{ secrets.REPLICATE_API_TOKEN }}" | cog login --token-stdin
 
       - name: Push model (retry)
-        env:
-          HF_TOKEN: ${{ secrets.HUGGING_FACE_NEW }}
         run: |
-          sed -i "s/HF_TOKEN_PLACEHOLDER/${HF_TOKEN}/g" cog.yaml
           for i in 1 2 3; do
             cog push r8.im/selcukakyigit/face-swap-flux && break
             echo "Retry $i failed, retrying..."
