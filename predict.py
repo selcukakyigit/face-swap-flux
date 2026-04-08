@@ -46,7 +46,8 @@ MODELS = [
 
 def download_models():
     from huggingface_hub import hf_hub_download
-    hf_token = os.environ.get("HF_TOKEN")
+    token_file = SysPath("/src/.hf_token")
+    hf_token = token_file.read_text().strip() if token_file.exists() else os.environ.get("HF_TOKEN")
 
     for m in MODELS:
         dest = SysPath(m["dest"])
