@@ -1,14 +1,29 @@
-import json
-import os
-import shutil
-import subprocess
-import time
-import uuid
-import base64
-import requests
-from pathlib import Path
+import sys
+import traceback
 
-import runpod
+# stderr'i stdout'a yönlendir — RunPod loglarında görünsün
+sys.stderr = sys.stdout
+
+print("=== HANDLER STARTING ===", flush=True)
+
+try:
+    import json
+    import os
+    import shutil
+    import subprocess
+    import time
+    import uuid
+    import base64
+    import requests
+    from pathlib import Path
+    print("[OK] stdlib imports done", flush=True)
+
+    import runpod
+    print("[OK] runpod imported", flush=True)
+except Exception as e:
+    print(f"[FATAL] Import error: {e}", flush=True)
+    traceback.print_exc()
+    sys.exit(1)
 
 COMFY_DIR = "/comfyui"
 WORKFLOW_PATH = Path("/workflow_api.json")
@@ -157,11 +172,16 @@ def download_image(url_or_b64: str, dest: Path):
 
 
 # Worker başlarken bir kez çalışır
-print("[INIT] Modeller indiriliyor...")
-download_models()
-print("[INIT] ComfyUI başlatılıyor...")
-COMFY_PROC = start_comfy()
-print("[INIT] Hazır.")
+try:
+    print("[INIT] Modeller indiriliyor...", flush=True)
+    download_models()
+    print("[INIT] ComfyUI başlatılıyor...", flush=True)
+    COMFY_PROC = start_comfy()
+    print("[INIT] Hazır.", flush=True)
+except Exception as e:
+    print(f"[FATAL] Init error: {e}", flush=True)
+    traceback.print_exc()
+    sys.exit(1)
 
 
 def handler(job):
