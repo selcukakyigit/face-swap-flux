@@ -1,0 +1,50 @@
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip git wget ffmpeg \
+    libgl1 libglib2.0-0 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN ln -sf /usr/bin/python3 /usr/bin/python
+
+# PyTorch
+RUN pip install --no-cache-dir \
+    torch==2.4.1 torchvision==0.19.1 \
+    --index-url https://download.pytorch.org/whl/cu121
+
+# ComfyUI
+RUN git clone https://github.com/comfyanonymous/ComfyUI /comfyui
+RUN pip install --no-cache-dir -r /comfyui/requirements.txt
+
+# Custom nodes
+RUN git clone --depth=1 https://github.com/scraed/LanPaint.git /comfyui/custom_nodes/LanPaint
+RUN git clone --depth=1 https://github.com/rgthree/rgthree-comfy.git /comfyui/custom_nodes/rgthree-comfy
+RUN git clone --depth=1 https://github.com/cubiq/ComfyUI_essentials.git /comfyui/custom_nodes/ComfyUI_essentials
+
+RUN pip install --no-cache-dir -e /comfyui/custom_nodes/LanPaint || true
+RUN pip install --no-cache-dir -r /comfyui/custom_nodes/rgthree-comfy/requirements.txt || true
+RUN pip install --no-cache-dir -r /comfyui/custom_nodes/ComfyUI_essentials/requirements.txt || true
+RUN pip install --no-cache-dir -r /comfyui/custom_nodes/LanPaint/requirements.txt || true
+
+# Pydantic fix
+RUN sed -i '/register_assets_routes/d' /comfyui/server.py
+RUN pip install --no-cache-dir "pydantic==1.10.15" "fastapi==0.98.0"
+
+# RunPod + HuggingFace
+RUN pip install --no-cache-dir runpod huggingface_hub requests
+
+# Directories
+RUN mkdir -p /comfyui/models/unet \
+    /comfyui/models/vae \
+    /comfyui/models/clip \
+    /comfyui/models/loras \
+    /comfyui/input \
+    /comfyui/output
+
+COPY workflow_api.json /workflow_api.json
+COPY handler.py /handler.py
+
+CMD ["python", "-u", "/handler.py"]

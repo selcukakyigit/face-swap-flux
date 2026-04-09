@@ -1,10 +1,10 @@
-name: Push model to Replicate
+name: Build and push Docker image
 
 on:
   workflow_dispatch:
 
 jobs:
-  push-model:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,26 +22,20 @@ jobs:
           sudo rm -rf /usr/local/lib/node_modules || true
           sudo rm -rf /opt/ghc || true
           sudo rm -rf /opt/hostedtoolcache || true
-          sudo rm -rf /usr/local/graalvm || true
-          sudo rm -rf /usr/local/.ghcup || true
           sudo apt-get clean || true
           docker system prune -af || true
-          docker buildx prune -af || true
           df -h
 
-      - name: Install Cog
-        uses: replicate/setup-cog@v2
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login to Replicate
-        run: echo "${{ secrets.REPLICATE_API_TOKEN }}" | cog login --token-stdin
-
-      - name: Push model (retry)
-        env:
-          HF_TOKEN: ${{ secrets.HUGGING_FACE_NEW }}
-        run: |
-          sed -i "s/HF_TOKEN_PLACEHOLDER/${HF_TOKEN}/g" cog.yaml
-          for i in 1 2 3; do
-            cog push r8.im/selcukakyigit/face-swap-flux && break
-            echo "Retry $i failed, retrying..."
-            sleep 10
-          done
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/selcukakyigit/face-swap-flux:latest
