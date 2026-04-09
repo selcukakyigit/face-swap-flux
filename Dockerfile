@@ -29,11 +29,10 @@ RUN pip install --no-cache-dir -r /comfyui/custom_nodes/rgthree-comfy/requiremen
 RUN pip install --no-cache-dir -r /comfyui/custom_nodes/ComfyUI_essentials/requirements.txt || true
 RUN pip install --no-cache-dir -r /comfyui/custom_nodes/LanPaint/requirements.txt || true
 
-# Pydantic fix
+# ComfyUI server.py pydantic fix (remove assets routes that require pydantic v2)
 RUN sed -i '/register_assets_routes/d' /comfyui/server.py
-RUN pip install --no-cache-dir "pydantic==1.10.15" "fastapi==0.98.0"
 
-# RunPod + HuggingFace
+# RunPod + HuggingFace (pydantic v2 compatible)
 RUN pip install --no-cache-dir runpod huggingface_hub requests
 
 # Directories
