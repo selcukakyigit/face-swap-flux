@@ -81,6 +81,10 @@ def get_model_path(m):
 def download_models():
     from huggingface_hub import hf_hub_download
     hf_token = os.environ.get("HF_TOKEN")
+    if hf_token:
+        print(f"[HF] Token found: {hf_token[:8]}...{hf_token[-4:]}", flush=True)
+    else:
+        print("[HF] WARNING: HF_TOKEN not set in environment!", flush=True)
 
     for m in MODELS:
         name = m.get("dest_name", Path(m["filename"]).name)
