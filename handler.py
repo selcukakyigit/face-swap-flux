@@ -66,12 +66,13 @@ MODELS = [
 
 def get_model_path(m):
     name = m.get("dest_name", Path(m["filename"]).name)
-    # Network volume varsa oraya/oradan al
-    if VOLUME_MODEL_DIR.exists():
+    volume_root = Path("/runpod-volume")
+    if volume_root.exists():
+        # Volume bağlı — models klasörünü oluştur
+        VOLUME_MODEL_DIR.mkdir(parents=True, exist_ok=True)
         vol_path = VOLUME_MODEL_DIR / m["subfolder"] / name
         local_path = LOCAL_MODEL_DIR / m["subfolder"] / name
         if vol_path.exists() and not local_path.exists():
-            # Symlink: volume'dan local'a
             local_path.parent.mkdir(parents=True, exist_ok=True)
             local_path.symlink_to(vol_path)
         return vol_path
