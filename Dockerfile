@@ -30,7 +30,7 @@ RUN pip install --no-cache-dir -r /comfyui/custom_nodes/ComfyUI_essentials/requi
 RUN pip install --no-cache-dir -r /comfyui/custom_nodes/LanPaint/requirements.txt || true
 
 # ComfyUI server.py pydantic fix (remove assets routes that require pydantic v2)
-RUN sed -i 's/.*register_assets_routes.*/            pass/' /comfyui/server.py
+RUN sed -i 's/\(\s*\).*register_assets_routes.*/\1pass/' /comfyui/server.py
 
 # RunPod + HuggingFace (pydantic v2 compatible)
 RUN pip install --no-cache-dir runpod huggingface_hub requests
