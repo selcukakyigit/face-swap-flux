@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -12,8 +12,8 @@ RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # PyTorch
 RUN pip install --no-cache-dir \
-    torch==2.4.1 torchvision==0.19.1 \
-    --index-url https://download.pytorch.org/whl/cu121
+    torch torchvision \
+    --index-url https://download.pytorch.org/whl/cu128
 
 # ComfyUI
 RUN git clone https://github.com/comfyanonymous/ComfyUI /comfyui
