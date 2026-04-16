@@ -251,7 +251,7 @@ def handler(job):
         if prompt_id in data:
             entry = data[prompt_id]
             if entry.get("status", {}).get("status_str") == "error":
-                msgs = [m.get("text", "") for m in entry["status"].get("messages", [])]
+                msgs = [m[1] if isinstance(m, list) else m.get("text", str(m)) for m in entry["status"].get("messages", [])]
                 return {"error": "ComfyUI error: " + "; ".join(msgs)}
 
             for _, node in entry.get("outputs", {}).items():
