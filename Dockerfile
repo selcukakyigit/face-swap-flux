@@ -33,7 +33,7 @@ RUN pip install --no-cache-dir -r /comfyui/custom_nodes/LanPaint/requirements.tx
 RUN sed -i 's/\(\s*\).*register_assets_routes.*/\1pass/' /comfyui/server.py
 
 # RunPod + HuggingFace (pydantic v2 compatible)
-RUN pip install --no-cache-dir runpod huggingface_hub requests
+RUN pip install --no-cache-dir runpod huggingface_hub requests websocket-client
 
 # Directories
 RUN mkdir -p /comfyui/models/unet \

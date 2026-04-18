@@ -1,7 +1,5 @@
 import sys
 import traceback
-
-# stderr'i stdout'a yönlendir — RunPod loglarında görünsün
 sys.stderr = sys.stdout
 
 print("=== HANDLER STARTING ===", flush=True)
@@ -15,9 +13,9 @@ try:
     import uuid
     import base64
     import requests
+    import websocket
     from pathlib import Path
-    print("[OK] stdlib imports done", flush=True)
-
+    print("[OK] imports done", flush=True)
     import runpod
     print("[OK] runpod imported", flush=True)
 except Exception as e:
@@ -29,8 +27,8 @@ COMFY_DIR = "/comfyui"
 WORKFLOW_PATH = Path("/workflow_api.json")
 INPUT_DIR = Path("/comfyui/input")
 OUTPUT_DIR = Path("/comfyui/output")
+COMFY_HOST = "127.0.0.1:8188"
 
-# Model storage: Network Volume varsa /runpod-volume/models kullan
 VOLUME_MODEL_DIR = Path("/runpod-volume/models")
 LOCAL_MODEL_DIR = Path("/comfyui/models")
 
@@ -68,13 +66,15 @@ def get_model_path(m):
     name = m.get("dest_name", Path(m["filename"]).name)
     volume_root = Path("/runpod-volume")
     if volume_root.exists():
-        # Volume bağlı — models klasörünü oluştur
         VOLUME_MODEL_DIR.mkdir(parents=True, exist_ok=True)
         vol_path = VOLUME_MODEL_DIR / m["subfolder"] / name
         local_path = LOCAL_MODEL_DIR / m["subfolder"] / name
         if vol_path.exists() and not local_path.exists():
             local_path.parent.mkdir(parents=True, exist_ok=True)
-            local_path.symlink_to(vol_path)
+            try:
+                local_path.symlink_to(vol_path)
+            except FileExistsError:
+                pass
         return vol_path
     return LOCAL_MODEL_DIR / m["subfolder"] / name
 
@@ -83,23 +83,24 @@ def download_models():
     from huggingface_hub import hf_hub_download
     hf_token = os.environ.get("HF_TOKEN")
     if hf_token:
-        print(f"[HF] Token found: {hf_token[:8]}...{hf_token[-4:]}", flush=True)
+        print(f"[HF] Token: {hf_token[:8]}...{hf_token[-4:]}", flush=True)
     else:
-        print("[HF] WARNING: HF_TOKEN not set in environment!", flush=True)
+        print("[HF] WARNING: HF_TOKEN not set!", flush=True)
 
     for m in MODELS:
         name = m.get("dest_name", Path(m["filename"]).name)
         dest = get_model_path(m)
         dest.parent.mkdir(parents=True, exist_ok=True)
 
-        # Symlink veya dosya zaten varsa atla
         if dest.exists() or dest.is_symlink():
             print(f"[MODEL] exists: {name}")
-            # ComfyUI local path için symlink garantile
             local = LOCAL_MODEL_DIR / m["subfolder"] / name
             if not local.exists() and dest != local:
                 local.parent.mkdir(parents=True, exist_ok=True)
-                local.symlink_to(dest)
+                try:
+                    local.symlink_to(dest)
+                except FileExistsError:
+                    pass
             continue
 
         print(f"[MODEL] downloading: {name}")
@@ -116,11 +117,13 @@ def download_models():
             shutil.move(str(downloaded), str(dest))
         print(f"[MODEL] done: {name}")
 
-        # Local symlink
         local = LOCAL_MODEL_DIR / m["subfolder"] / name
         if not local.exists() and dest != local:
             local.parent.mkdir(parents=True, exist_ok=True)
-            local.symlink_to(dest)
+            try:
+                local.symlink_to(dest)
+            except FileExistsError:
+                pass
 
 
 def start_comfy():
@@ -154,7 +157,7 @@ def start_comfy():
             )
 
         try:
-            r = requests.get("http://127.0.0.1:8188/system_stats", timeout=2)
+            r = requests.get(f"http://{COMFY_HOST}/system_stats", timeout=2)
             if r.status_code == 200:
                 print("[COMFY] ready")
                 return proc
@@ -165,24 +168,28 @@ def start_comfy():
     raise RuntimeError("ComfyUI timeout\n" + "\n".join(startup_lines[-50:]))
 
 
-def download_image(url_or_b64: str, dest: Path):
+def upload_image(image_data: bytes, filename: str) -> str:
+    files = {"image": (filename, image_data, "image/png")}
+    r = requests.post(f"http://{COMFY_HOST}/upload/image", files=files, timeout=60)
+    r.raise_for_status()
+    return r.json().get("name", filename)
+
+
+def get_image_bytes(url_or_b64: str) -> bytes:
     if url_or_b64.startswith("data:image") or not url_or_b64.startswith("http"):
-        # base64
-        header, data = url_or_b64.split(",", 1) if "," in url_or_b64 else ("", url_or_b64)
-        dest.write_bytes(base64.b64decode(data))
-    else:
-        r = requests.get(url_or_b64, timeout=60)
-        r.raise_for_status()
-        dest.write_bytes(r.content)
+        _, data = url_or_b64.split(",", 1) if "," in url_or_b64 else ("", url_or_b64)
+        return base64.b64decode(data)
+    r = requests.get(url_or_b64, timeout=60)
+    r.raise_for_status()
+    return r.content
 
 
-# Worker başlarken bir kez çalışır
 try:
-    print("[INIT] Modeller indiriliyor...", flush=True)
+    print("[INIT] Downloading models...", flush=True)
     download_models()
-    print("[INIT] ComfyUI başlatılıyor...", flush=True)
+    print("[INIT] Starting ComfyUI...", flush=True)
     COMFY_PROC = start_comfy()
-    print("[INIT] Hazır.", flush=True)
+    print("[INIT] Ready.", flush=True)
 except Exception as e:
     print(f"[FATAL] Init error: {e}", flush=True)
     traceback.print_exc()
@@ -193,7 +200,6 @@ def handler(job):
     global COMFY_PROC
 
     job_input = job.get("input", {})
-
     base_image = job_input.get("base_image")
     face_image = job_input.get("face_image")
     prompt = job_input.get("prompt", "head_swap: Use image 1 as the base image, preserving its environment, background, camera perspective, framing, exposure, contrast, and lighting. Remove the head from image 1 and seamlessly replace it with the head from image 2. Match the original head size, face-to-body ratio, neck thickness, shoulder alignment, and camera distance so proportions remain natural and unchanged. Adapt the inserted head to the lighting of image 1 by matching light direction, intensity, softness, color temperature, shadows, and highlights, with no independent relighting. Preserve the identity of image 2, including hair texture, eye color, nose structure, facial proportions, and skin details. Match the pose and expression from image 1, including head tilt, rotation, eye direction, gaze, micro-expressions, and lip position. Ensure seamless neck and jaw blending, consistent skin tone, realistic shadow contact, natural skin texture, and uniform sharpness. Photorealistic, high quality, sharp details, 4K.")
@@ -205,21 +211,20 @@ def handler(job):
     if not base_image or not face_image:
         return {"error": "base_image and face_image are required"}
 
-    # ComfyUI çöktüyse yeniden başlat
     if COMFY_PROC.poll() is not None:
         print("[WARN] ComfyUI down, restarting...")
         COMFY_PROC = start_comfy()
 
     uid = uuid.uuid4().hex
-    base_dst = INPUT_DIR / f"base_{uid}.png"
-    face_dst = INPUT_DIR / f"face_{uid}.png"
 
-    download_image(base_image, base_dst)
-    download_image(face_image, face_dst)
+    # Download images and upload to ComfyUI
+    base_name = upload_image(get_image_bytes(base_image), f"base_{uid}.png")
+    face_name = upload_image(get_image_bytes(face_image), f"face_{uid}.png")
 
+    # Build workflow
     workflow = json.loads(WORKFLOW_PATH.read_bytes())
-    workflow["151"]["inputs"]["image"] = base_dst.name
-    workflow["121"]["inputs"]["image"] = face_dst.name
+    workflow["151"]["inputs"]["image"] = base_name
+    workflow["121"]["inputs"]["image"] = face_name
     workflow["107"]["inputs"]["text"] = prompt
     workflow["100"]["inputs"]["guidance"] = guidance
     workflow["156"]["inputs"]["steps"] = steps
@@ -228,7 +233,13 @@ def handler(job):
         int(time.time() * 1000) % 2147483647 if seed == 0 else seed
     )
 
-    r = requests.post("http://127.0.0.1:8188/prompt", json={"prompt": workflow}, timeout=120)
+    # Submit with client_id for websocket tracking
+    client_id = uuid.uuid4().hex
+    r = requests.post(
+        f"http://{COMFY_HOST}/prompt",
+        json={"prompt": workflow, "client_id": client_id},
+        timeout=120,
+    )
     r.raise_for_status()
     prompt_data = r.json()
 
@@ -238,51 +249,66 @@ def handler(job):
     prompt_id = prompt_data["prompt_id"]
     print(f"[JOB] prompt_id: {prompt_id}")
 
-    for _ in range(600):
-        if COMFY_PROC.poll() is not None:
-            return {"error": "ComfyUI crashed during inference"}
+    # Wait for completion via websocket
+    ws = websocket.WebSocket()
+    ws.connect(f"ws://{COMFY_HOST}/ws?clientId={client_id}")
+    ws.settimeout(600)
 
-        h = requests.get(f"http://127.0.0.1:8188/history/{prompt_id}", timeout=30)
-        if h.status_code != 200:
-            time.sleep(2)
-            continue
+    try:
+        while True:
+            if COMFY_PROC.poll() is not None:
+                return {"error": "ComfyUI crashed during inference"}
 
-        data = h.json()
-        if prompt_id in data:
-            entry = data[prompt_id]
-            if entry.get("status", {}).get("status_str") == "error":
-                msgs = [m[1] if isinstance(m, list) else m.get("text", str(m)) for m in entry["status"].get("messages", [])]
-                return {"error": "ComfyUI error: " + "; ".join(msgs)}
+            out = ws.recv()
+            if not isinstance(out, str):
+                continue
 
-            for _, node in entry.get("outputs", {}).items():
-                if "images" in node and node["images"]:
-                    image = node["images"][0]
-                    img = requests.get(
-                        "http://127.0.0.1:8188/view",
-                        params={
-                            "filename": image["filename"],
-                            "subfolder": image.get("subfolder", ""),
-                            "type": image.get("type", "output"),
-                        },
-                        timeout=120,
-                    )
-                    img.raise_for_status()
+            msg = json.loads(out)
+            msg_type = msg.get("type")
 
-                    b64 = base64.b64encode(img.content).decode("utf-8")
+            if msg_type == "executing":
+                data = msg.get("data", {})
+                if data.get("node") is None and data.get("prompt_id") == prompt_id:
+                    break  # Done
 
-                    # Temizlik
-                    try:
-                        base_dst.unlink(missing_ok=True)
-                        face_dst.unlink(missing_ok=True)
-                    except Exception:
-                        pass
+            elif msg_type == "execution_error":
+                data = msg.get("data", {})
+                return {"error": f"ComfyUI error: {json.dumps(data)}"}
 
-                    print("[JOB] done")
-                    return {"image": f"data:image/png;base64,{b64}"}
+    finally:
+        ws.close()
 
-        time.sleep(2)
+    # Fetch result from history
+    h = requests.get(f"http://{COMFY_HOST}/history/{prompt_id}", timeout=30)
+    h.raise_for_status()
+    history = h.json()
 
-    return {"error": "Timeout: no output in 20 minutes"}
+    if prompt_id not in history:
+        return {"error": "No history entry found"}
+
+    entry = history[prompt_id]
+
+    if entry.get("status", {}).get("status_str") == "error":
+        return {"error": f"ComfyUI error: {json.dumps(entry.get('status', {}))}"}
+
+    for _, node in entry.get("outputs", {}).items():
+        if "images" in node and node["images"]:
+            image = node["images"][0]
+            img = requests.get(
+                f"http://{COMFY_HOST}/view",
+                params={
+                    "filename": image["filename"],
+                    "subfolder": image.get("subfolder", ""),
+                    "type": image.get("type", "output"),
+                },
+                timeout=120,
+            )
+            img.raise_for_status()
+            b64 = base64.b64encode(img.content).decode("utf-8")
+            print("[JOB] done")
+            return {"image": f"data:image/png;base64,{b64}"}
+
+    return {"error": "No output image in results"}
 
 
 runpod.serverless.start({"handler": handler})
