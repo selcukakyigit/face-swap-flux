@@ -2,143 +2,100 @@
   "9": {
     "inputs": {
       "filename_prefix": "Flux2_dev",
-      "images": [
-        "104",
-        0
-      ]
+      "images": ["104", 0]
     },
     "class_type": "SaveImage",
-    "_meta": {
-      "title": "Görüntüyü Kaydet"
-    }
+    "_meta": {"title": "Save Image"}
   },
   "100": {
     "inputs": {
       "guidance": 4,
-      "conditioning": [
-        "107",
-        0
-      ]
+      "conditioning": ["118", 0]
     },
     "class_type": "FluxGuidance",
-    "_meta": {
-      "title": "FluxRehberliği"
-    }
+    "_meta": {"title": "FluxGuidance"}
   },
   "102": {
     "inputs": {
       "vae_name": "flux2-vae.safetensors"
     },
     "class_type": "VAELoader",
-    "_meta": {
-      "title": "VAE Yükle"
-    }
+    "_meta": {"title": "VAE Loader"}
   },
   "104": {
     "inputs": {
-      "samples": [
-        "156",
-        0
-      ],
-      "vae": [
-        "102",
-        0
-      ]
+      "samples": ["156", 0],
+      "vae": ["102", 0]
     },
     "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Kod Çözme"
-    }
+    "_meta": {"title": "VAE Decode"}
   },
   "107": {
     "inputs": {
       "text": "head_swap: Use image 1 as the base image, preserving its environment, background, camera perspective, framing, exposure, contrast, and lighting. Remove the head from image 1 and seamlessly replace it with the head from image 2.\nMatch the original head size, face-to-body ratio, neck thickness, shoulder alignment, and camera distance so proportions remain natural and unchanged.\n\nAdapt the inserted head to the lighting of image 1 by matching light direction, intensity, softness, color temperature, shadows, and highlights, with no independent relighting.\nPreserve the identity of image 2, including hair texture, eye color, nose structure, facial proportions, and skin details.\nMatch the pose and expression from image 1, including head tilt, rotation, eye direction, gaze, micro-expressions, and lip position.\nEnsure seamless neck and jaw blending, consistent skin tone, realistic shadow contact, natural skin texture, and uniform sharpness.\nPhotorealistic, high quality, sharp details, 4K.",
-      "clip": [
-        "146",
-        0
-      ]
+      "clip": ["146", 0]
     },
     "class_type": "CLIPTextEncode",
-    "_meta": {
-      "title": "CLIP Text Encode (Positive Prompt)"
-    }
+    "_meta": {"title": "CLIP Text Encode (Positive Prompt)"}
+  },
+  "112": {
+    "inputs": {
+      "conditioning": ["107", 0],
+      "latent": ["150", 0]
+    },
+    "class_type": "ReferenceLatent",
+    "_meta": {"title": "ReferenceLatent (base image)"}
   },
   "115": {
     "inputs": {
       "upscale_method": "lanczos",
-      "megapixels": [
-        "135",
-        0
-      ],
+      "megapixels": ["135", 0],
       "resolution_steps": 1,
-      "image": [
-        "151",
-        0
-      ]
+      "image": ["151", 0]
     },
     "class_type": "ImageScaleToTotalPixels",
-    "_meta": {
-      "title": "Görüntüyü Toplam Piksele Göre Ölçekle"
-    }
+    "_meta": {"title": "Scale base image"}
+  },
+  "118": {
+    "inputs": {
+      "conditioning": ["112", 0],
+      "latent": ["119", 0]
+    },
+    "class_type": "ReferenceLatent",
+    "_meta": {"title": "ReferenceLatent (face image)"}
   },
   "119": {
     "inputs": {
-      "pixels": [
-        "120",
-        0
-      ],
-      "vae": [
-        "102",
-        0
-      ]
+      "pixels": ["120", 0],
+      "vae": ["102", 0]
     },
     "class_type": "VAEEncode",
-    "_meta": {
-      "title": "VAE Kodlama"
-    }
+    "_meta": {"title": "VAE Encode (face)"}
   },
   "120": {
     "inputs": {
       "upscale_method": "lanczos",
-      "megapixels": [
-        "135",
-        0
-      ],
+      "megapixels": ["135", 0],
       "resolution_steps": 1,
-      "image": [
-        "121",
-        0
-      ]
+      "image": ["121", 0]
     },
     "class_type": "ImageScaleToTotalPixels",
-    "_meta": {
-      "title": "Görüntüyü Toplam Piksele Göre Ölçekle"
-    }
+    "_meta": {"title": "Scale face image"}
   },
   "121": {
     "inputs": {
       "image": "portrait-smiley-little-kid.png"
     },
     "class_type": "LoadImage",
-    "_meta": {
-      "title": "Görüntü Yükle"
-    }
+    "_meta": {"title": "Load Face Image"}
   },
   "125": {
     "inputs": {
-      "pixels": [
-        "115",
-        0
-      ],
-      "vae": [
-        "102",
-        0
-      ]
+      "pixels": ["115", 0],
+      "vae": ["102", 0]
     },
     "class_type": "VAEEncode",
-    "_meta": {
-      "title": "VAE Kodlama"
-    }
+    "_meta": {"title": "VAE Encode (base for size)"}
   },
   "126": {
     "inputs": {
@@ -146,30 +103,21 @@
       "weight_dtype": "default"
     },
     "class_type": "UNETLoader",
-    "_meta": {
-      "title": "Difüzyon Modeli Yükle"
-    }
+    "_meta": {"title": "UNET Loader"}
   },
   "135": {
     "inputs": {
       "value": 0.5
     },
     "class_type": "PrimitiveFloat",
-    "_meta": {
-      "title": "Float (Set Megapixels)"
-    }
+    "_meta": {"title": "Float (Set Megapixels)"}
   },
   "136": {
     "inputs": {
-      "conditioning": [
-        "107",
-        0
-      ]
+      "conditioning": ["107", 0]
     },
     "class_type": "ConditioningZeroOut",
-    "_meta": {
-      "title": "KoşullandırmaSıfırla"
-    }
+    "_meta": {"title": "Negative Conditioning"}
   },
   "146": {
     "inputs": {
@@ -178,123 +126,68 @@
       "device": "default"
     },
     "class_type": "CLIPLoader",
-    "_meta": {
-      "title": "CLIP Yükle"
-    }
+    "_meta": {"title": "CLIP Loader"}
   },
   "147": {
     "inputs": {
-      "samples": [
-        "125",
-        0
-      ],
-      "vae": [
-        "102",
-        0
-      ]
+      "samples": ["125", 0],
+      "vae": ["102", 0]
     },
     "class_type": "VAEDecode",
-    "_meta": {
-      "title": "VAE Kod Çözme"
-    }
+    "_meta": {"title": "VAE Decode (for size)"}
   },
   "148": {
     "inputs": {
-      "image": [
-        "147",
-        0
-      ]
+      "image": ["147", 0]
     },
-    "class_type": "GetImageSize+",
-    "_meta": {
-      "title": "Resim Boyutunu Al"
-    }
+    "class_type": "GetImageSize",
+    "_meta": {"title": "Get Image Size"}
   },
   "149": {
     "inputs": {
       "upscale_method": "lanczos",
-      "width": [
-        "148",
-        0
-      ],
-      "height": [
-        "148",
-        1
-      ],
+      "width": ["148", 0],
+      "height": ["148", 1],
       "crop": "center",
-      "image": [
-        "151",
-        0
-      ]
+      "image": ["151", 0]
     },
     "class_type": "ImageScale",
-    "_meta": {
-      "title": "Görüntüyü Büyüt"
-    }
+    "_meta": {"title": "Scale base to target size"}
   },
   "150": {
     "inputs": {
-      "pixels": [
-        "149",
-        0
-      ],
-      "vae": [
-        "102",
-        0
-      ]
+      "pixels": ["149", 0],
+      "vae": ["102", 0]
     },
     "class_type": "VAEEncode",
-    "_meta": {
-      "title": "VAE Kodlama"
-    }
+    "_meta": {"title": "VAE Encode (base for reference + mask)"}
   },
   "151": {
     "inputs": {
       "image": "Screenshot_29.jpg"
     },
     "class_type": "LoadImage",
-    "_meta": {
-      "title": "Görüntü Yükle"
-    }
+    "_meta": {"title": "Load Base Image"}
   },
   "152": {
     "inputs": {
-      "samples": [
-        "150",
-        0
-      ],
-      "mask": [
-        "153",
-        0
-      ]
+      "samples": ["150", 0],
+      "mask": ["153", 0]
     },
     "class_type": "SetLatentNoiseMask",
-    "_meta": {
-      "title": "Gizli Gürültü Maskesi Ayarla"
-    }
+    "_meta": {"title": "Set Latent Noise Mask"}
   },
   "153": {
     "inputs": {
       "resize_type": "scale dimensions",
-      "resize_type.width": [
-        "148",
-        0
-      ],
-      "resize_type.height": [
-        "148",
-        1
-      ],
+      "resize_type.width": ["148", 0],
+      "resize_type.height": ["148", 1],
       "resize_type.crop": "center",
       "scale_method": "bicubic",
-      "input": [
-        "151",
-        1
-      ]
+      "input": ["151", 1]
     },
     "class_type": "ResizeImageMaskNode",
-    "_meta": {
-      "title": "Görsel/Maske Yeniden Boyutlandır"
-    }
+    "_meta": {"title": "Resize Image/Mask"}
   },
   "156": {
     "inputs": {
@@ -306,88 +199,41 @@
       "denoise": 1,
       "LanPaint_NumSteps": 2,
       "LanPaint_PromptMode": "Image First",
-      "LanPaint_Info": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!",
-      "Inpainting_mode": "🖼️ Image Inpainting",
-      "model": [
-        "161",
-        0
-      ],
-      "positive": [
-        "100",
-        0
-      ],
-      "negative": [
-        "136",
-        0
-      ],
-      "latent_image": [
-        "162",
-        0
-      ]
+      "LanPaint_Info": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star \u2b50\ufe0f!",
+      "Inpainting_mode": "\ud83d\uddbc\ufe0f Image Inpainting",
+      "model": ["161", 0],
+      "positive": ["100", 0],
+      "negative": ["136", 0],
+      "latent_image": ["162", 0]
     },
     "class_type": "LanPaint_KSampler",
-    "_meta": {
-      "title": "LanPaint KSampler"
-    }
-  },
-  "160": {
-    "inputs": {
-      "mask": [
-        "153",
-        0
-      ]
-    },
-    "class_type": "MaskPreview+",
-    "_meta": {
-      "title": "MaskeÖnizleme"
-    }
+    "_meta": {"title": "LanPaint KSampler"}
   },
   "161": {
     "inputs": {
       "lora_name": "bfs_head_v1_flux-klein_9b_step3500_rank128.safetensors",
       "strength_model": 1,
-      "model": [
-        "126",
-        0
-      ]
+      "model": ["126", 0]
     },
     "class_type": "LoraLoaderModelOnly",
-    "_meta": {
-      "title": "SadeceModelLoRA Yükleyici"
-    }
+    "_meta": {"title": "LoRA Loader (Model Only)"}
   },
   "162": {
     "inputs": {
       "switch": true,
-      "on_false": [
-        "152",
-        0
-      ],
-      "on_true": [
-        "163",
-        0
-      ]
+      "on_false": ["152", 0],
+      "on_true": ["163", 0]
     },
     "class_type": "ComfySwitchNode",
-    "_meta": {
-      "title": "Switch (Disable Inpainting)"
-    }
+    "_meta": {"title": "Switch (Disable Inpainting)"}
   },
   "163": {
     "inputs": {
-      "width": [
-        "148",
-        0
-      ],
-      "height": [
-        "148",
-        1
-      ],
+      "width": ["148", 0],
+      "height": ["148", 1],
       "batch_size": 1
     },
     "class_type": "EmptyFlux2LatentImage",
-    "_meta": {
-      "title": "Boş Flux 2 Latent"
-    }
+    "_meta": {"title": "Empty Flux2 Latent"}
   }
 }
