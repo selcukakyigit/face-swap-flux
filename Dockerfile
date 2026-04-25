@@ -30,7 +30,12 @@ RUN pip install --no-cache-dir -r /comfyui/custom_nodes/ComfyUI_essentials/requi
 RUN pip install --no-cache-dir -r /comfyui/custom_nodes/LanPaint/requirements.txt || true
 
 # ComfyUI server.py pydantic fix (remove assets routes that require pydantic v2)
-RUN sed -i 's/\(\s*\).*register_assets_routes.*/\1pass/' /comfyui/server.py
+RUN sed -i 's/\(\s*\).*register_assets_routes.*/\1pass/' /comfyui/server.py || true
+
+# Ensure compatible package versions for new ComfyUI model manager
+RUN pip install --no-cache-dir \
+    "sqlalchemy>=2.0" "alembic>=1.13" aiofiles \
+    "pydantic>=2.0" einops scipy scikit-image
 
 # RunPod + HuggingFace (pydantic v2 compatible)
 RUN pip install --no-cache-dir runpod huggingface_hub requests websocket-client

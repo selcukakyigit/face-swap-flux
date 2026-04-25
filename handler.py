@@ -151,10 +151,13 @@ def start_comfy():
 
         if proc.poll() is not None:
             remaining = proc.stdout.read() if proc.stdout else ""
+            all_lines = startup_lines + (remaining.splitlines() if remaining else [])
+            print("[FATAL] ComfyUI crash dump (last 50 lines):", flush=True)
+            for l in all_lines[-50:]:
+                print("[FATAL]", l, flush=True)
             raise RuntimeError(
                 f"ComfyUI crashed. Exit: {proc.returncode}\n"
-                + "\n".join(startup_lines[-100:])
-                + (remaining or "")
+                + "\n".join(all_lines[-50:])
             )
 
         try:
