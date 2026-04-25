@@ -182,8 +182,18 @@ def start_comfy():
     raise RuntimeError("ComfyUI timeout\n" + "\n".join(startup_lines[-50:]))
 
 
+def to_png(image_data: bytes) -> bytes:
+    from PIL import Image
+    import io
+    img = Image.open(io.BytesIO(image_data)).convert("RGB")
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    return buf.getvalue()
+
+
 def upload_image(image_data: bytes, filename: str) -> str:
-    files = {"image": (filename, image_data, "image/png")}
+    png_data = to_png(image_data)
+    files = {"image": (filename, png_data, "image/png")}
     r = requests.post(f"http://{COMFY_HOST}/upload/image", files=files, timeout=60)
     r.raise_for_status()
     return r.json().get("name", filename)
