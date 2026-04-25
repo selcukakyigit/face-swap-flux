@@ -113,7 +113,7 @@ def download_models():
             local_dir_use_symlinks=False,
         )
         downloaded = Path(tmp)
-        if downloaded.name != name:
+        if downloaded != dest:
             shutil.move(str(downloaded), str(dest))
         print(f"[MODEL] done: {name}")
 
