@@ -16,6 +16,7 @@ try:
     import websocket
     from pathlib import Path
     print("[OK] imports done", flush=True)
+    import threading
     import runpod
     print("[OK] runpod imported", flush=True)
 except Exception as e:
@@ -160,6 +161,16 @@ def start_comfy():
             r = requests.get(f"http://{COMFY_HOST}/system_stats", timeout=2)
             if r.status_code == 200:
                 print("[COMFY] ready")
+                # Start background thread to drain stdout continuously
+                def _drain(p):
+                    while p.poll() is None:
+                        try:
+                            line = p.stdout.readline()
+                            if line:
+                                print("[COMFY]", line.rstrip(), flush=True)
+                        except Exception:
+                            break
+                threading.Thread(target=_drain, args=(proc,), daemon=True).start()
                 return proc
         except Exception:
             time.sleep(1)
