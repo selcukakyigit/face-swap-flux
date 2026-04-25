@@ -19,6 +19,10 @@ RUN pip install --no-cache-dir \
 RUN git clone https://github.com/comfyanonymous/ComfyUI /comfyui
 RUN pip install --no-cache-dir -r /comfyui/requirements.txt
 
+# Remove audio nodes that require CUDA 13.0 (torchaudio/libcudart.so.13)
+RUN rm -f /comfyui/comfy_extras/nodes_lt_audio.py \
+    /comfyui/comfy/ldm/lightricks/vae/audio_vae.py || true
+
 # Custom nodes
 RUN git clone --depth=1 https://github.com/scraed/LanPaint.git /comfyui/custom_nodes/LanPaint
 RUN git clone --depth=1 https://github.com/rgthree/rgthree-comfy.git /comfyui/custom_nodes/rgthree-comfy
