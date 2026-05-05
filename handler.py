@@ -228,7 +228,7 @@ def handler(job):
     face_image = job_input.get("face_image")
     prompt = job_input.get("prompt", "head_swap: Use image 1 as the base image, preserving its environment, background, camera perspective, framing, exposure, contrast, and lighting. Remove the head from image 1 and seamlessly replace it with the head from image 2. Match the original head size, face-to-body ratio, neck thickness, shoulder alignment, and camera distance so proportions remain natural and unchanged. Adapt the inserted head to the lighting of image 1 by matching light direction, intensity, softness, color temperature, shadows, and highlights, with no independent relighting. Preserve the identity of image 2, including hair texture, eye color, nose structure, facial proportions, and skin details. Match the pose and expression from image 1, including head tilt, rotation, eye direction, gaze, micro-expressions, and lip position. Ensure seamless neck and jaw blending, consistent skin tone, realistic shadow contact, natural skin texture, and uniform sharpness. Photorealistic, high quality, sharp details, 4K.")
     seed = int(job_input.get("seed", 0))
-    steps = int(job_input.get("steps", 4))
+    steps = int(job_input.get("steps", 8))
     guidance = float(job_input.get("guidance", 4.0))
     cfg = float(job_input.get("cfg", 1.0))
 
